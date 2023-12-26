@@ -3,10 +3,18 @@ from colorama import Fore, Style
 
 def chat_loop(client):
     logger.info("Starting chat loop")
+    user_options = "Options: [1] Ask a question [2] Get help [3] Exit"
+
     while True:
-        user_input = input(f"{Fore.CYAN} User: {Style.RESET_ALL}")
-        if user_input == "quit":
+        print(user_options)  # Display user options
+        user_input = input(f"{Fore.CYAN} How can I help: {Style.RESET_ALL}")
+
+        if user_input == "3" or user_input.lower() == "exit":  # Exit condition
             break
+        elif user_input == "2":  # Example help command
+            print("You can ask any question or type 'exit' to leave.")
+            continue
+
         try:
             client.send_message(user_input)
             run_id = client.create_run()  # Capture the run ID
