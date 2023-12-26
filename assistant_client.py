@@ -16,7 +16,7 @@ class AssistantClient:
         try:
             self.assistant = self.client.beta.assistants.create(
                 name="Personal assistant",
-                instructions="You are a personal assistant...",
+                instructions="You are a personal assistant. You're job is to be as helpful as you can to the user and to answer all questions as accurately and succinctly as you can.",
                 tools=[{"type": "code_interpreter"}],
                 model="gpt-4-1106-preview"
             )
@@ -25,7 +25,20 @@ class AssistantClient:
             logger.error(f"Error in initializing assistant: {e}")
             raise
 
-    def send_message(self, user_input):
+    def upload_file(self, file_path):
+        try:
+            with open(file_path, "rb") as file:
+                file_id = self.client.files.create(file=file, purpose='assistants').id
+            self.client.beta.assistants.files.create(   
+                assistant_id=self.assistant.id,
+                file_id=file_id
+            )            
+            return file_id
+        except Exception as e:
+            logger.error(f"Error in uploading file: {e}")
+            raise
+
+    def send_message(self, user_input, input_type = "text"):
         try:
             message = self.client.beta.threads.messages.create(
                 thread_id=self.thread.id,
