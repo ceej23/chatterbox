@@ -28,9 +28,15 @@ def check_run(client, thread_id, run_id):
         run = client.get_run_status(thread_id, run_id)
         if run.status == "completed":
             logger.info("Run is completed")
+            return "completed"
+            break
+        if run.status == "requires_action":
+            logger.info("Run requires action")
+            return "requires_action"
             break
         elif run.status == "expired":
             logger.warning("Run is expired")
+            return "expired"
             break
         else:
             logger.debug(f"Run status: {run.status}")

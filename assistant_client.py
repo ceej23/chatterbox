@@ -1,8 +1,27 @@
 import os
 import openai
+import vision
 from dotenv import load_dotenv
 from utilities import logger
 
+
+function_definition = {
+    "type": "function",
+    "function": {
+        "name": "call_gpt_vision",
+        "description": "Call the GPT Vision API to analyse an image and understand its contents",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "description": "Location of the file to be analyzed"
+                }
+            },
+            "required": ["url"]
+        }
+    }
+}
 class AssistantClient:
     def __init__(self):
         """
@@ -24,7 +43,10 @@ class AssistantClient:
             self.assistant = self.client.beta.assistants.create(
                 name="Personal assistant",
                 instructions="You are a personal assistant. Your job is to be as helpful as you can to the user and to answer all questions as accurately and succinctly as you can.",
-                tools=[{"type": "code_interpreter"}],
+                tools=[
+                    {"type": "code_interpreter"},
+                    function_definition
+                ],
                 model="gpt-4-1106-preview"
             )
             self.thread = self.client.beta.threads.create()
@@ -68,13 +90,27 @@ class AssistantClient:
         try:
             run = self.client.beta.threads.runs.create(
                 thread_id=self.thread.id,
-                assistant_id=self.assistant.id,
+                assistant_id=self.assistant.id
             )
             return run.id  # Return the ID of the run
         except Exception as e:
             logger.error(f"Error in creating run: {e}")
             raise
 
+    def retrieve_run(self, run_id):
+        """
+        Retrieves a run on the thread and run ID.
+        """
+        try:
+            run = self.client.beta.threads.runs.retrieve(
+                thread_id=self.thread.id,
+                run_id=run_id
+            )
+            return run  # Return run
+        except Exception as e:
+            logger.error(f"Error in creating run: {e}")
+            raise
+        
     def get_messages(self):
         """
         Retrieves all messages from the thread and returns them.
