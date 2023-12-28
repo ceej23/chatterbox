@@ -1,5 +1,6 @@
 import logging
 import time
+import requests
 from colorama import Fore, Style
 
 def setup_logging(level=logging.INFO):
@@ -14,6 +15,28 @@ def setup_logging(level=logging.INFO):
     return logging.getLogger(__name__)
 
 logger = setup_logging()
+
+def download_file(url, local_filename):
+    """
+    Downloads a file from a given URL to a specified local file path.
+
+    :param url: URL of the file to download.
+    :param local_filename: Local path to save the downloaded file.
+    :return: Path to the downloaded file.
+    """
+    logger.info(f"Downloading file: {url}")
+
+    try:
+        with requests.get(url, stream=True) as r:
+            r.raise_for_status()
+            with open(local_filename, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+        return local_filename
+    except Exception as e:
+        logger.error(f"Error downloading file: {e}")
+        raise
+
 
 def check_run(client, thread_id, run_id):
     """
